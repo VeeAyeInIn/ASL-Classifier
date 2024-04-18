@@ -1,14 +1,19 @@
-from typing import Union, Any
+from typing import Union, Any, Optional, Tuple, List
 
 import mediapipe as mp
 import cv2
 import math
 
+from cv2 import Mat
+from mediapipe.framework.formats import landmark_pb2
+from mediapipe.python import solutions
 from numpy import ndarray, dtype, generic
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
+
+custom_hand_landmark_drawing_style = mp_drawing_styles.get_default_hand_landmarks_style()
 
 DEFAULT_ANGLE_INDICES = [
     (0, 1, 2),  # 1
@@ -64,9 +69,10 @@ def calculate_angles(points: list[tuple[float, float, float]], angle_indices: li
     return angles
 
 
-def process_frame(frame: Union[cv2.Mat, ndarray[Any, dtype[generic]], ndarray], confidence: float = 0.5) -> list[float]:
+def process_frame(frame: Union[cv2.Mat, ndarray[Any, dtype[generic]], ndarray], confidence: float = 0.5):
     """
-    Processes a frame from the webcam, captured from cv2.
+    Processes a frame from the webcam, captured from cv2. Assume that the amount of detected hands will always be 1, if
+    hand(s) are detected. Assert that something alike "hand_landmarks" refers to "multi_hand_landmarks[0]".
     :param frame: The frame to predict process.
     :param confidence: The confidence (handedness) to process the frame with.
     :return: The angles of the fingers.
@@ -75,17 +81,30 @@ def process_frame(frame: Union[cv2.Mat, ndarray[Any, dtype[generic]], ndarray], 
     with mp_hands.Hands(
             static_image_mode=False,
             max_num_hands=1,
-            min_detection_confidence=confidence
+            min_detection_confidence=confidence,
+            model_complexity=0  # Subject to Change.
     ) as hands:
         image = cv2.flip(frame, 1)
         results = hands.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
         if not results.multi_hand_landmarks:
-            return None
+            return None, image
 
-        if not results.multi_hand_world_landmarks:
-            return None
+        # if not results.multi_hand_world_landmarks:
+        #     return None, image
 
         landmarks = [(pos.x, pos.y, pos.z) for pos in results.multi_hand_world_landmarks[0].landmark]
 
-        return calculate_angles(landmarks)
+        return calculate_angles(landmarks), annotate_image(image, results)
+
+
+def annotate_image(image, results):
+    annotated_image = image.copy()
+    mp_drawing.draw_landmarks(
+        annotated_image,
+        results.multi_hand_landmarks[0],
+        mp_hands.HAND_CONNECTIONS,
+        mp_drawing_styles.get_default_hand_landmarks_style(),
+        mp_drawing_styles.get_default_hand_connections_style()
+    )
+    return annotated_image
