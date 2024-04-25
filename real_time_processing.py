@@ -1,4 +1,3 @@
-import time
 import training
 import cv2
 import pandas as pd
@@ -17,20 +16,24 @@ model.train(inputs, labels)
 
 while True:
 
+    # Read in the frame from the webcam.
     ret, frame = vid.read()
+
+    # Process the image. Returns the angles of the hand's landmarks and the annotated frame.
     angles, image = process_frame(frame)
 
+    # Check if the frame included a (processed) hand.
     if angles is not None:
         prediction = model.predict([angles], k=5)
         print(f'Prediction: {prediction}')
     else:
         prediction = '?'
 
+    # Label the image with the prediction.
     image = cv2.putText(image, prediction[0], (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
 
+    # Display the annotated image, and check if the window should close.
     cv2.imshow(f'ASL-Classifier', image)
-    if cv2.waitKey(1) & 0xFF == ord('s'):
-        cv2.imwrite(f'C:\\Users\\veeay\\PycharmProjects\\MachineLearningStuff\\Prediction {prediction} {int(time.time())}.jpg', image)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
