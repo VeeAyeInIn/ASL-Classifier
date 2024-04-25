@@ -4,16 +4,19 @@ import pandas as pd
 
 from processing import process_frame
 
+# Read the training data and labels from file.
 inputs_path = f'resources/X_Training_Angles.csv'
 labels_path = f'resources/Y_Training.csv'
-
 inputs = pd.read_csv(inputs_path, header=None)
 labels = pd.read_csv(labels_path, header=None)
 
 vid = cv2.VideoCapture(0)
+
+# Instantiate and train the model using the provided training data and labels.
 model = training.ASLModel()
 model.train(inputs, labels)
 
+# Loop until appropriate keyboard interrupt ('q').
 while True:
 
     # Read in the frame from the webcam.
@@ -25,7 +28,7 @@ while True:
     # Check if the frame included a (processed) hand.
     if angles is not None:
         prediction = model.predict([angles], k=5)
-        print(f'Prediction: {prediction}')
+        # print(f'Prediction: {prediction}')
     else:
         prediction = '?'
 
@@ -38,5 +41,6 @@ while True:
         break
 
 
+# Kill the window.
 vid.release()
 cv2.destroyAllWindows()

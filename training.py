@@ -49,6 +49,14 @@ class ASLModel:
             self.y.append(labels.iloc[i][0])
 
     def test(self, inputs: pd.DataFrame, labels: pd.DataFrame) -> float:
+
+        """
+        Unimplemented method for testing. Actual testing was done with GPU acceleration via colab.
+        :param inputs: The pandas DataFrame for testing data.
+        :param labels: The pandas DataFrame for labels.
+        :return: The testing accuracy of the model.
+        """
+
         pass
 
     def predict_(self, inputs: list[list[float]], k: int = 1) -> list[str]:
@@ -79,15 +87,20 @@ class ASLModel:
 
         results = []
 
+        # Iterate over each input data point.
         for input_ in inputs:
+
+            # Find the distances between the input data point and all data points.
             distances = [_distance(np.array(input_), training) for training in self.X]
 
+            # Get the K nearest neighbor's indices.
             nearest = []
             for i in range(k):
                 smallest = np.argmin(distances)
                 nearest.append(smallest)
                 distances[smallest] = distances[np.argmax(distances)]
 
+            # Make a prediction based on majority voting.
             predictions = [self.y[j] for j in nearest]
             results.append(max(set(predictions), key=predictions.count))
 
