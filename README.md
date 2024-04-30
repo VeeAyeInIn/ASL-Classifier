@@ -13,6 +13,8 @@ webcam.
 
 `python.exe -m pip install mediapipe`
 
+Data is already processed in the /resources/ directory.
+
 ## Running the Demo
 
 To run the demo, it needs access to your webcam. To prevent too much strain, it will only process one hand at a time, so
@@ -28,3 +30,8 @@ images to make predictions.
 
 By default, the model is throttled to only use 1 out of every 20 data points (5%). Without GPU acceleration, it is not
 recommended to run this using all data points.
+
+## Colab
+
+Python Notebooks that we used to process data and form the beginning of our project can be found in the /colab/
+directory. They are used as standalone files on Google Colab.
